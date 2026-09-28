@@ -7,11 +7,8 @@ Translations for the Pollen Forecast plugin.
 TRANSLATIONS = {
 
     "en": {
-
-        "device_alert_today": "Pollen Alert Today",
-        "device_alert_tomorrow": "Pollen Alert Tomorrow",
-        "device_today": "Pollen Today",
-        "device_tomorrow": "Pollen Tomorrow",
+        "today": "Today",
+        "tomorrow": "Tomorrow",
 
         "unknown_pollen": "Unknown pollen",
         "no_data": "No data",
@@ -35,11 +32,8 @@ TRANSLATIONS = {
     },
 
     "lb": {
-
-        "device_alert_today": "Pollen Alarm haut",
-        "device_alert_tomorrow": "Pollen Alarm muer",
-        "device_today": "Pollen haut",
-        "device_tomorrow": "Pollen muer",
+        "today": "Haut",
+        "tomorrow": "Muer",
 
         "unknown_pollen": "Onbekannte Pollen",
         "no_data": "Keng Donnéeën",
@@ -63,11 +57,8 @@ TRANSLATIONS = {
     },
 
     "de": {
-
-        "device_alert_today": "Pollenwarnung heute",
-        "device_alert_tomorrow": "Pollenwarnung morgen",
-        "device_today": "Pollen heute",
-        "device_tomorrow": "Pollen morgen",
+        "today": "Heute",
+        "tomorrow": "Morgen",
 
         "unknown_pollen": "Unbekannter Pollen",
         "no_data": "Keine Daten",
@@ -91,11 +82,8 @@ TRANSLATIONS = {
     },
 
     "fr": {
-
-        "device_alert_today": "Alerte pollen aujourd'hui",
-        "device_alert_tomorrow": "Alerte pollen demain",
-        "device_today": "Pollen aujourd'hui",
-        "device_tomorrow": "Pollen demain",
+        "today": "aujourd'hui",
+        "tomorrow": "demain",
 
         "unknown_pollen": "Pollen inconnu",
         "no_data": "Aucune donnée",
@@ -119,11 +107,8 @@ TRANSLATIONS = {
     },
 
     "nl": {
-
-        "device_alert_today": "Pollenwaarschuwing vandaag",
-        "device_alert_tomorrow": "Pollenwaarschuwing morgen",
-        "device_today": "Pollen vandaag",
-        "device_tomorrow": "Pollen morgen",
+        "today": "vandaag",
+        "tomorrow": "morgen",
 
         "unknown_pollen": "Onbekend pollen",
         "no_data": "Geen gegevens",

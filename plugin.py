@@ -230,16 +230,8 @@ class BasePlugin:
                     "today and tomorrow"
                 )
 
-            self.devices.update_day(
-                alert_unit=1,
-                text_unit=3,
-                day=days[0],
-            )
-
-            self.devices.update_day(
-                alert_unit=2,
-                text_unit=4,
-                day=days[1],
+            self.devices.update_days(
+                days
             )
 
             self.last_update = time.time()

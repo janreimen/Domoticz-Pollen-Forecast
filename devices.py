@@ -1,23 +1,45 @@
 # -*- coding: utf-8 -*-
 """
 Domoticz device handling for the Pollen Forecast plugin.
+
+One native Domoticz Alert device is created for each pollen species
+and each forecast day.
+
+Device model:
+
+    Unit 1  = Alder Today
+    Unit 2  = Alder Tomorrow
+    Unit 3  = Birch Today
+    Unit 4  = Birch Tomorrow
+    ...
+
+The Alert device nValue represents the pollen level:
+
+    0 = No data
+    1 = None
+    2 = Low
+    3 = Medium
+    4 = High
+
+Domoticz renders these values using its native Alert colors.
 """
 
 import Domoticz
 
-from pollen import (
-    get_definition,
-    level_for,
-)
+from pollen import get_definition, level_for
 from translations import get_translation
 
 
 class PollenDevices:
 
-    ALERT_TODAY = 1
-    ALERT_TOMORROW = 2
-    TEXT_TODAY = 3
-    TEXT_TOMORROW = 4
+    # ------------------------------------------------------------------
+    # Device layout
+    # ------------------------------------------------------------------
+
+    DAYS = (
+        "today",
+        "tomorrow",
+    )
 
     def __init__(
         self,
@@ -58,175 +80,225 @@ class PollenDevices:
 
     def create(self):
 
-        t = self.translation
+        unit = 1
 
-        self._create_if_missing(
-            self.ALERT_TODAY,
-            t["device_alert_today"],
-            "Alert",
-        )
+        for pollen_key in self._pollen_keys():
 
-        self._create_if_missing(
-            self.ALERT_TOMORROW,
-            t["device_alert_tomorrow"],
-            "Alert",
-        )
+            for day in self.DAYS:
 
-        self._create_if_missing(
-            self.TEXT_TODAY,
-            t["device_today"],
-            "Text",
-        )
+                name = self._device_name(
+                    pollen_key,
+                    day,
+                )
 
-        self._create_if_missing(
-            self.TEXT_TOMORROW,
-            t["device_tomorrow"],
-            "Text",
-        )
+                self._create_if_missing(
+                    unit,
+                    name,
+                )
+
+                unit += 1
 
     def _create_if_missing(
         self,
         unit,
         name,
-        type_name,
     ):
 
-        if unit not in self.devices:
+        if unit in self.devices:
+            return
 
-            Domoticz.Device(
-                Name=name,
-                Unit=unit,
-                TypeName=type_name,
-                Used=1,
-            ).Create()
+        Domoticz.Device(
+            Name=name,
+            Unit=unit,
+            TypeName="Alert",
+            Used=1,
+        ).Create()
+
+        self.log(
+            "Created device {}: {}".format(
+                unit,
+                name,
+            )
+        )
 
     # ------------------------------------------------------------------
-    # Update
+    # Update all forecast devices
     # ------------------------------------------------------------------
+
+    def update_days(
+        self,
+        days,
+    ):
+
+        if len(days) < 2:
+            raise ValueError(
+                "Need today and tomorrow forecast data"
+            )
+
+        self.update_day(
+            day=days[0],
+            day_name="today",
+        )
+
+        self.update_day(
+            day=days[1],
+            day_name="tomorrow",
+        )
 
     def update_day(
         self,
-        alert_unit,
-        text_unit,
         day,
+        day_name,
     ):
 
-        levels = {}
+        if day_name not in self.DAYS:
+            raise ValueError(
+                "Unsupported forecast day: {}".format(
+                    day_name
+                )
+            )
 
-        for (
-            pollen_key,
-            concentration,
-        ) in day["values"].items():
+        for pollen_key in self._pollen_keys():
 
-            levels[pollen_key] = level_for(
+            concentration = day[
+                "values"
+            ].get(
+                pollen_key
+            )
+
+            level = level_for(
                 pollen_key,
                 concentration,
             )
 
-        available_levels = [
-            level
-            for level in levels.values()
-            if level > 0
-        ]
-
-        overall = (
-            max(available_levels)
-            if available_levels
-            else 0
-        )
-
-        level_text = self.translation[
-            "levels"
-        ][overall]
-
-        details = []
-
-        for (
-            pollen_key,
-            concentration,
-        ) in day["values"].items():
-
-            level = levels[
-                pollen_key
-            ]
-
-            if concentration is None:
-
-                species_level_text = (
-                    self.translation[
-                        "no_data"
-                    ]
-                )
-
-            else:
-
-                species_level_text = (
-                    self.translation[
-                        "levels"
-                    ][level]
-                )
-
-            label = self._pollen_label(
-                pollen_key
+            unit = self._unit_for(
+                pollen_key,
+                day_name,
             )
 
-            details.append(
-                "{}: {}".format(
-                    label,
-                    species_level_text,
+            self._update(
+                unit=unit,
+                nvalue=level,
+                svalue=self._level_text(
+                    level
+                ),
+            )
+
+            self.log(
+                "{} {}: concentration={} "
+                "level={} ({})".format(
+                    day_name,
+                    pollen_key,
+                    concentration,
+                    level,
+                    self._level_text(level),
                 )
             )
 
-        details_text = " | ".join(
-            details
-        )
+    # ------------------------------------------------------------------
+    # Pollen definitions
+    # ------------------------------------------------------------------
 
-        self._update(
-            alert_unit,
-            overall,
-            level_text,
-        )
+    @staticmethod
+    def _pollen_keys():
 
-        self._update(
-            text_unit,
-            0,
-            details_text,
-        )
-
-        self.log(
-            "{} -> {} | {}".format(
-                day["date"],
-                level_text,
-                details_text,
-            )
+        return (
+            "alder_pollen",
+            "birch_pollen",
+            "grass_pollen",
+            "mugwort_pollen",
+            "olive_pollen",
+            "ragweed_pollen",
         )
 
     # ------------------------------------------------------------------
-    # Labels
+    # Device naming
     # ------------------------------------------------------------------
 
-    def _pollen_label(
+    def _device_name(
         self,
         pollen_key,
+        day_name,
     ):
 
         labels = self.translation[
             "pollen"
         ]
 
-        if pollen_key in labels:
-            return labels[pollen_key]
-
-        definition = get_definition(
-            pollen_key
+        pollen_label = labels.get(
+            pollen_key,
+            get_definition(
+                pollen_key
+            ).key,
         )
 
-        return "{} ({})".format(
-            self.translation.get(
-                "unknown_pollen",
-                "Unknown pollen",
-            ),
-            definition.key,
+        if day_name == "today":
+
+            suffix = self.translation[
+                "today"
+            ]
+
+        else:
+
+            suffix = self.translation[
+                "tomorrow"
+            ]
+
+        return "{} {}".format(
+            pollen_label,
+            suffix,
+        )
+
+    # ------------------------------------------------------------------
+    # Unit mapping
+    # ------------------------------------------------------------------
+
+    def _unit_for(
+        self,
+        pollen_key,
+        day_name,
+    ):
+
+        keys = self._pollen_keys()
+
+        try:
+            pollen_index = keys.index(
+                pollen_key
+            )
+
+        except ValueError:
+            raise ValueError(
+                "Unknown pollen key: {}".format(
+                    pollen_key
+                )
+            )
+
+        day_index = self.DAYS.index(
+            day_name
+        )
+
+        return (
+            pollen_index * 2
+            + day_index
+            + 1
+        )
+
+    # ------------------------------------------------------------------
+    # Level text
+    # ------------------------------------------------------------------
+
+    def _level_text(
+        self,
+        level,
+    ):
+
+        return self.translation[
+            "levels"
+        ].get(
+            level,
+            self.translation[
+                "no_data"
+            ],
         )
 
     # ------------------------------------------------------------------
@@ -243,7 +315,9 @@ class PollenDevices:
         if unit not in self.devices:
             return
 
-        device = self.devices[unit]
+        device = self.devices[
+            unit
+        ]
 
         if (
             device.nValue != nvalue
