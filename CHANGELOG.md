@@ -25,10 +25,36 @@ Changes that are planned or currently under development but are not yet part of 
 
 ---
 
-## [0.2.0-alpha] - 2026-09-28
+## [0.2.0-beta] - 2026-09-29
 
 ### Added
 
+- Configurable pollen allergen selection through `Mode5`.
+- Support for `alder`, `birch`, `grass`, `mugwort`, `olive`, and `ragweed`.
+- Blank `Mode5` selects all supported allergens.
+- CSV-based allergen selection.
+- Aggregate pollen level sensors for today and tomorrow when more than one allergen is selected.
+- Aggregate level calculation based on the selected allergen `nValue`s.
+- Half-up rounding at `.50` for aggregate levels.
+- `Mode6` debug setting.
+- Spanish (`es`) language support.
+- Portuguese (`pt`) language support.
+- Romanian (`ro`) language support.
+- Italian (`it`) language support.
+- Polish (`pl`) language support.
+
+### Changed
+
+- Promoted the plugin from `0.2.0-alpha` to `0.2.0-beta`.
+- Moved Debug from `Mode5` to `Mode6`.
+- Expanded language support to 10 languages.
+- Extended translated device names and pollen labels.
+
+### Technical
+
+- Continued modular separation of configuration, API, pollen processing, devices, and translations.
+- Unknown pollen variables returned by the API continue to receive fallback thresholds.
+- No external Python packages are required.
 * Modular plugin architecture.
 * Dedicated configuration module.
 * Dedicated Open-Meteo API client.

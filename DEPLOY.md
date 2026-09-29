@@ -7,7 +7,7 @@ This document describes how to install, configure, update, verify, and remove th
 Current version:
 
 ```text
-0.2.0-alpha
+0.2.0-beta
 ```
 
 The plugin uses only the Python standard library and does not require additional Python packages.
@@ -136,13 +136,13 @@ git clone \
 
 cd PollenForecast
 
-git checkout 0.2.0-alpha
+git checkout 0.2.0-beta
 ```
 
 If the project uses a release tag with a `v` prefix, use:
 
 ```bash
-git checkout v0.2.0-alpha
+git checkout v0.2.0-beta
 ```
 
 The actual tag name should always be verified against the GitHub release.
@@ -441,7 +441,7 @@ Therefore, after adding the hardware, it should immediately attempt to retrieve 
 The Domoticz log should contain messages similar to:
 
 ```text
-PollenForecast: Starting version 0.2.0-alpha
+PollenForecast: Starting version 0.2.0-beta
 ```
 
 and, when debug mode is enabled:
@@ -569,13 +569,13 @@ cd /opt/domoticz/userdata/plugins/PollenForecast
 
 git fetch --tags
 
-git checkout 0.2.0-alpha
+git checkout 0.2.0-beta
 ```
 
 If the repository uses a `v` prefix:
 
 ```bash
-git checkout v0.2.0-alpha
+git checkout v0.2.0-beta
 ```
 
 Verify:
@@ -654,7 +654,7 @@ The plugin will find existing devices by unit number and update them.
 The plugin is currently:
 
 ```text
-0.2.0-alpha
+0.2.0-beta
 ```
 
 The device model is still considered subject to change during the `0.x` development phase.

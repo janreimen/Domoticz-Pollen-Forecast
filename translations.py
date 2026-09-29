@@ -3,16 +3,13 @@
 Translations for the Pollen Forecast plugin.
 """
 
-
 TRANSLATIONS = {
-
     "en": {
         "today": "Today",
         "tomorrow": "Tomorrow",
-
+        "selected_pollen": "Selected pollen",
         "unknown_pollen": "Unknown pollen",
         "no_data": "No data",
-
         "levels": {
             0: "No data",
             1: "None",
@@ -20,7 +17,6 @@ TRANSLATIONS = {
             3: "Medium",
             4: "High",
         },
-
         "pollen": {
             "alder_pollen": "Alder",
             "birch_pollen": "Birch",
@@ -30,14 +26,122 @@ TRANSLATIONS = {
             "ragweed_pollen": "Ragweed",
         },
     },
-
+    "it": {
+        "today": "oggi",
+        "tomorrow": "domani",
+        "selected_pollen": "Polline selezionato",
+        "unknown_pollen": "Polline sconosciuto",
+        "no_data": "Nessun dato",
+        "levels": {
+            0: "Nessun dato",
+            1: "Assente",
+            2: "Basso",
+            3: "Medio",
+            4: "Alto",
+        },
+        "pollen": {
+            "alder_pollen": "Ontano",
+            "birch_pollen": "Betulla",
+            "grass_pollen": "Graminacee",
+            "mugwort_pollen": "Artemisia",
+            "olive_pollen": "Olivo",
+            "ragweed_pollen": "Ambrosia",
+        },
+    },
+    "es": {
+        "today": "hoy",
+        "tomorrow": "mañana",
+        "selected_pollen": "Polen seleccionado",
+        "unknown_pollen": "Polen desconocido",
+        "no_data": "Sin datos",
+        "levels": {
+            0: "Sin datos",
+            1: "Ninguno",
+            2: "Bajo",
+            3: "Medio",
+            4: "Alto",
+        },
+        "pollen": {
+            "alder_pollen": "Aliso",
+            "birch_pollen": "Abedul",
+            "grass_pollen": "Gramíneas",
+            "mugwort_pollen": "Artemisa",
+            "olive_pollen": "Olivo",
+            "ragweed_pollen": "Ambrosía",
+        },
+    },
+    "pt": {
+        "today": "hoje",
+        "tomorrow": "amanhã",
+        "selected_pollen": "Pólen selectionado",
+        "unknown_pollen": "Pólen desconhecido",
+        "no_data": "Sem dados",
+        "levels": {
+            0: "Sem dados",
+            1: "Nenhum",
+            2: "Baixo",
+            3: "Médio",
+            4: "Alto",
+        },
+        "pollen": {
+            "alder_pollen": "Amieiro",
+            "birch_pollen": "Bétula",
+            "grass_pollen": "Gramíneas",
+            "mugwort_pollen": "Artemísia",
+            "olive_pollen": "Oliveira",
+            "ragweed_pollen": "Ambrósia",
+        },
+    },
+    "pl": {
+        "today": "Dzisiaj",
+        "tomorrow": "Jutro",
+        "selected_pollen": "Wybrane pyłki",
+        "unknown_pollen": "Wybrane pyłko",
+        "no_data": "Brak danych",
+        "levels": {
+            0: "Brak danych",
+            1: "Brak",
+            2: "Niski",
+            3: "Średni",
+            4: "Wysoki",
+        },
+        "pollen": {
+            "alder_pollen": "Olsza",
+            "birch_pollen": "Brzoza",
+            "grass_pollen": "Trawy",
+            "mugwort_pollen": "Bylica",
+            "olive_pollen": "Oliwka",
+            "ragweed_pollen": "Ambrozja",
+        },
+    },
+    "ro": {
+        "today": "Astăzi",
+        "tomorrow": "Mâine",
+        "selected_pollen": "Polen selectat",
+        "unknown_pollen": "Polen necunoscut",
+        "no_data": "Fără date",
+        "levels": {
+            0: "Fără date",
+            1: "Niciunul",
+            2: "Scăzut",
+            3: "Mediu",
+            4: "Ridicat",
+        },
+        "pollen": {
+            "alder_pollen": "Arin",
+            "birch_pollen": "Mesteacăn",
+            "grass_pollen": "Ierburi",
+            "mugwort_pollen": "Peliniță",
+            "olive_pollen": "Măslin",
+            "ragweed_pollen": "Ambrozie",
+        },
+    },
     "lb": {
         "today": "Haut",
         "tomorrow": "Muer",
-
+        "selected_pollen": "Ausgewielten Pollen",
         "unknown_pollen": "Onbekannte Pollen",
         "no_data": "Keng Donnéeën",
-
         "levels": {
             0: "Keng Donnéeën",
             1: "Keng",
@@ -45,7 +149,6 @@ TRANSLATIONS = {
             3: "Mëttel",
             4: "Héich",
         },
-
         "pollen": {
             "alder_pollen": "Erle",
             "birch_pollen": "Birk",
@@ -55,14 +158,12 @@ TRANSLATIONS = {
             "ragweed_pollen": "Ambrosia",
         },
     },
-
     "de": {
         "today": "Heute",
         "tomorrow": "Morgen",
-
+        "selected_pollen": "Ausgewählte Pollen",
         "unknown_pollen": "Unbekannter Pollen",
         "no_data": "Keine Daten",
-
         "levels": {
             0: "Keine Daten",
             1: "Keine",
@@ -70,7 +171,6 @@ TRANSLATIONS = {
             3: "Mittel",
             4: "Hoch",
         },
-
         "pollen": {
             "alder_pollen": "Erle",
             "birch_pollen": "Birke",
@@ -80,14 +180,12 @@ TRANSLATIONS = {
             "ragweed_pollen": "Ambrosia",
         },
     },
-
     "fr": {
         "today": "aujourd'hui",
         "tomorrow": "demain",
-
+        "selected_pollen": "Pollen sélectionnés",
         "unknown_pollen": "Pollen inconnu",
         "no_data": "Aucune donnée",
-
         "levels": {
             0: "Aucune donnée",
             1: "Aucun",
@@ -95,7 +193,6 @@ TRANSLATIONS = {
             3: "Moyen",
             4: "Élevé",
         },
-
         "pollen": {
             "alder_pollen": "Aulne",
             "birch_pollen": "Bouleau",
@@ -105,14 +202,12 @@ TRANSLATIONS = {
             "ragweed_pollen": "Ambroisie",
         },
     },
-
     "nl": {
         "today": "vandaag",
         "tomorrow": "morgen",
-
+        "selected_pollen": "geselecteerd pollen",
         "unknown_pollen": "Onbekend pollen",
         "no_data": "Geen gegevens",
-
         "levels": {
             0: "Geen gegevens",
             1: "Geen",
@@ -120,7 +215,6 @@ TRANSLATIONS = {
             3: "Gemiddeld",
             4: "Hoog",
         },
-
         "pollen": {
             "alder_pollen": "Els",
             "birch_pollen": "Berk",

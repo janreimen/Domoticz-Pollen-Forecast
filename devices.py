@@ -2,49 +2,67 @@
 """
 Domoticz device handling for the Pollen Forecast plugin.
 
-One native Domoticz Alert device is created for each pollen species
-and each forecast day.
+One native Domoticz Alert device is created for each selected pollen
+species and each forecast day.
 
-Device model:
+When more than one allergen is selected, two additional Alert devices
+are created for the aggregated pollen level:
 
-    Unit 1  = Alder Today
-    Unit 2  = Alder Tomorrow
-    Unit 3  = Birch Today
-    Unit 4  = Birch Tomorrow
+    Selected Pollen Today
+    Selected Pollen Tomorrow
+
+The aggregate level is calculated from the individual pollen nValues:
+
+    average = sum(nValues) / number of selected allergens
+
+The average is rounded using normal half-up rounding:
+
+    fraction < 0.50  -> round down
+    fraction >= 0.50 -> round up
+
+Device mapping for individual pollen:
+
+    Alder Today
+    Alder Tomorrow
+    Birch Today
+    Birch Tomorrow
     ...
 
-The Alert device nValue represents the pollen level:
+Alert values:
 
     0 = No data
     1 = None
     2 = Low
     3 = Medium
     4 = High
-
-Domoticz renders these values using its native Alert colors.
 """
+
+import math
 
 import Domoticz
 
-from pollen import get_definition, level_for
+from pollen import (
+    KNOWN_POLLEN,
+    get_definition,
+    level_for,
+)
 from translations import get_translation
 
 
 class PollenDevices:
-
-    # ------------------------------------------------------------------
-    # Device layout
-    # ------------------------------------------------------------------
 
     DAYS = (
         "today",
         "tomorrow",
     )
 
+    AGGREGATE_UNIT_START = 100
+
     def __init__(
         self,
         devices,
         language,
+        selected_allergens,
         debug=False,
         log_fn=None,
     ):
@@ -54,12 +72,11 @@ class PollenDevices:
         self.translation = get_translation(
             language
         )
+        self.selected_allergens = tuple(
+            selected_allergens
+        )
         self.debug = debug
         self.log_fn = log_fn
-
-    # ------------------------------------------------------------------
-    # Logging
-    # ------------------------------------------------------------------
 
     def log(
         self,
@@ -73,10 +90,6 @@ class PollenDevices:
                     message
                 )
             )
-
-    # ------------------------------------------------------------------
-    # Device creation
-    # ------------------------------------------------------------------
 
     def create(self):
 
@@ -97,6 +110,18 @@ class PollenDevices:
                 )
 
                 unit += 1
+
+        if self._has_aggregate():
+
+            self._create_if_missing(
+                self._aggregate_unit("today"),
+                self._aggregate_device_name("today"),
+            )
+
+            self._create_if_missing(
+                self._aggregate_unit("tomorrow"),
+                self._aggregate_device_name("tomorrow"),
+            )
 
     def _create_if_missing(
         self,
@@ -120,10 +145,6 @@ class PollenDevices:
                 name,
             )
         )
-
-    # ------------------------------------------------------------------
-    # Update all forecast devices
-    # ------------------------------------------------------------------
 
     def update_days(
         self,
@@ -158,6 +179,8 @@ class PollenDevices:
                 )
             )
 
+        levels = {}
+
         for pollen_key in self._pollen_keys():
 
             concentration = day[
@@ -170,6 +193,8 @@ class PollenDevices:
                 pollen_key,
                 concentration,
             )
+
+            levels[pollen_key] = level
 
             unit = self._unit_for(
                 pollen_key,
@@ -195,25 +220,93 @@ class PollenDevices:
                 )
             )
 
-    # ------------------------------------------------------------------
-    # Pollen definitions
-    # ------------------------------------------------------------------
+        if self._has_aggregate():
+
+            aggregate_level = self._aggregate_level(
+                levels
+            )
+
+            self._update(
+                unit=self._aggregate_unit(
+                    day_name
+                ),
+                nvalue=aggregate_level,
+                svalue=self._level_text(
+                    aggregate_level
+                ),
+            )
+
+            self.log(
+                "{} aggregate: allergens={} "
+                "level={} ({})".format(
+                    day_name,
+                    ", ".join(
+                        self.selected_allergens
+                    ),
+                    aggregate_level,
+                    self._level_text(
+                        aggregate_level
+                    ),
+                )
+            )
 
     @staticmethod
     def _pollen_keys():
 
-        return (
-            "alder_pollen",
-            "birch_pollen",
-            "grass_pollen",
-            "mugwort_pollen",
-            "olive_pollen",
-            "ragweed_pollen",
+        return tuple(
+            "{}_pollen".format(
+                allergen
+            )
+            for allergen in KNOWN_POLLEN.keys()
         )
 
-    # ------------------------------------------------------------------
-    # Device naming
-    # ------------------------------------------------------------------
+    def _selected_pollen_keys(self):
+
+        return tuple(
+            "{}_pollen".format(
+                allergen
+            )
+            for allergen in self.selected_allergens
+        )
+
+    def _has_aggregate(self):
+
+        return len(
+            self.selected_allergens
+        ) > 1
+
+    def _aggregate_level(
+        self,
+        levels,
+    ):
+
+        selected_levels = [
+            levels.get(
+                pollen_key,
+                0,
+            )
+            for pollen_key
+            in self._selected_pollen_keys()
+        ]
+
+        if not selected_levels:
+            return 0
+
+        average = (
+            sum(selected_levels)
+            / len(selected_levels)
+        )
+
+        # Explicit half-up rounding:
+        #
+        # 1.49 -> 1
+        # 1.50 -> 2
+        # 1.51 -> 2
+        return int(
+            math.floor(
+                average + 0.5
+            )
+        )
 
     def _device_name(
         self,
@@ -249,9 +342,29 @@ class PollenDevices:
             suffix,
         )
 
-    # ------------------------------------------------------------------
-    # Unit mapping
-    # ------------------------------------------------------------------
+    def _aggregate_device_name(
+        self,
+        day_name,
+    ):
+
+        if day_name == "today":
+
+            suffix = self.translation[
+                "today"
+            ]
+
+        else:
+
+            suffix = self.translation[
+                "tomorrow"
+            ]
+
+        return "{} {}".format(
+            self.translation[
+                "selected_pollen"
+            ],
+            suffix,
+        )
 
     def _unit_for(
         self,
@@ -262,11 +375,13 @@ class PollenDevices:
         keys = self._pollen_keys()
 
         try:
+
             pollen_index = keys.index(
                 pollen_key
             )
 
         except ValueError:
+
             raise ValueError(
                 "Unknown pollen key: {}".format(
                     pollen_key
@@ -283,9 +398,19 @@ class PollenDevices:
             + 1
         )
 
-    # ------------------------------------------------------------------
-    # Level text
-    # ------------------------------------------------------------------
+    def _aggregate_unit(
+        self,
+        day_name,
+    ):
+
+        day_index = self.DAYS.index(
+            day_name
+        )
+
+        return (
+            self.AGGREGATE_UNIT_START
+            + day_index
+        )
 
     def _level_text(
         self,
@@ -300,10 +425,6 @@ class PollenDevices:
                 "no_data"
             ],
         )
-
-    # ------------------------------------------------------------------
-    # Domoticz update
-    # ------------------------------------------------------------------
 
     def _update(
         self,

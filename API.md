@@ -58,7 +58,7 @@ The exact URL is generated dynamically from the configured location and requeste
 The plugin identifies itself using the following HTTP User-Agent:
 
 ```text
-Domoticz-PollenForecast/0.2.0-alpha
+Domoticz-PollenForecast/0.2.0-beta
 ```
 
 The User-Agent should be updated when the plugin release version changes.

@@ -16,7 +16,7 @@ The goal is to make every release:
 Current development version:
 
 ```text
-0.2.0-alpha
+0.2.0-beta
 ```
 
 ---
@@ -35,7 +35,7 @@ Examples:
 
 ```text
 0.1.0-alpha
-0.2.0-alpha
+0.2.0-beta
 0.3.0-beta
 1.0.0
 1.0.1
@@ -90,7 +90,7 @@ Common pre-release identifiers are:
 Examples:
 
 ```text
-0.2.0-alpha
+0.2.0-beta
 0.2.0-beta
 0.2.0-rc1
 ```
@@ -129,27 +129,27 @@ The plugin XML metadata must contain the same version as the release.
 For example:
 
 ```xml
-version="0.2.0-alpha"
+version="0.2.0-beta"
 ```
 
 The Python version constant must match:
 
 ```python
-VERSION = "0.2.0-alpha"
+VERSION = "0.2.0-beta"
 ```
 
 The API User-Agent must also identify the release:
 
 ```python
 USER_AGENT = (
-    "Domoticz-PollenForecast/0.2.0-alpha"
+    "Domoticz-PollenForecast/0.2.0-beta"
 )
 ```
 
 The `VERSION` file should contain only:
 
 ```text
-0.2.0-alpha
+0.2.0-beta
 ```
 
 ---

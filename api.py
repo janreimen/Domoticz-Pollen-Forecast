@@ -18,7 +18,7 @@ API_URL = (
 )
 
 USER_AGENT = (
-    "Domoticz-PollenForecast/0.2.0-alpha"
+    "Domoticz-PollenForecast/0.2.0-beta"
 )
 
 

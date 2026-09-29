@@ -7,7 +7,7 @@ This document describes the development environment, project architecture, codin
 Current development version:
 
 ```text
-0.2.0-alpha
+0.2.0-beta
 ```
 
 The project is intentionally lightweight and uses the Python standard library only.
@@ -1109,13 +1109,13 @@ Also check the plugin XML metadata in `plugin.py`.
 For example:
 
 ```xml
-version="0.2.0-alpha"
+version="0.2.0-beta"
 ```
 
 and:
 
 ```python
-VERSION = "0.2.0-alpha"
+VERSION = "0.2.0-beta"
 ```
 
 must refer to the same release.
@@ -1605,7 +1605,7 @@ This is an intentional documented technical-debt item rather than an assumption 
 
 # 52. Current Device Model
 
-Version `0.2.0-alpha` uses:
+Version `0.2.0-beta` uses:
 
 ```text
 12 native Domoticz Alert devices
@@ -1671,7 +1671,7 @@ This is the current development model and may change before `1.0.0`.
 This document currently describes:
 
 ```text
-Domoticz Pollen Forecast 0.2.0-alpha
+Domoticz Pollen Forecast 0.2.0-beta
 ```
 
 The architecture, device model, API integration, and development workflow may evolve during the `0.x` development phase.

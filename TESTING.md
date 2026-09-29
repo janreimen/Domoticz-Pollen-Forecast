@@ -9,7 +9,7 @@ The project is designed to be testable without a running Domoticz installation f
 Current version:
 
 ```text
-0.2.0-alpha
+0.2.0-beta
 ```
 
 ---
@@ -1545,7 +1545,7 @@ Therefore, compatibility with a particular Domoticz version must ultimately be v
 This testing guide currently applies to:
 
 ```text
-Domoticz Pollen Forecast 0.2.0-alpha
+Domoticz Pollen Forecast 0.2.0-beta
 ```
 
 The test suite and procedures may evolve as the plugin architecture and device model develop toward `1.0.0`.

@@ -8,10 +8,24 @@ import Domoticz
 
 SUPPORTED_LANGUAGES = (
     "en",
+    "it",
+    "es",
+    "pt",
+    "pl",
+    "ro",
     "lb",
     "de",
     "fr",
-    "nl",
+    "nl"
+)
+
+SUPPORTED_ALLERGENS = (
+    "alder",
+    "birch",
+    "grass",
+    "mugwort",
+    "olive",
+    "ragweed",
 )
 
 
@@ -23,12 +37,14 @@ class PluginConfig:
         longitude,
         language,
         refresh_minutes,
+        allergens,
         debug,
     ):
         self.latitude = latitude
         self.longitude = longitude
         self.language = language
         self.refresh_minutes = refresh_minutes
+        self.allergens = allergens
         self.debug = debug
 
     @classmethod
@@ -86,9 +102,13 @@ class PluginConfig:
             refresh_minutes,
         )
 
+        allergens = cls._allergens_parameter(
+            parameters
+        )
+
         debug = (
             parameters.get(
-                "Mode5",
+                "Mode6",
                 "0",
             ) == "1"
         )
@@ -98,6 +118,7 @@ class PluginConfig:
             longitude=longitude,
             language=language,
             refresh_minutes=refresh_minutes,
+            allergens=allergens,
             debug=debug,
         )
 
@@ -131,3 +152,65 @@ class PluginConfig:
             )
 
             return float(default)
+
+    @staticmethod
+    def _allergens_parameter(
+        parameters,
+    ):
+
+        value = parameters.get(
+            "Mode5",
+            "",
+        )
+
+        if value is None:
+            value = ""
+
+        value = value.strip().lower()
+
+        # Empty input means all supported allergens.
+        if not value:
+            return SUPPORTED_ALLERGENS
+
+        requested = [
+            item.strip()
+            for item in value.split(",")
+            if item.strip()
+        ]
+
+        valid = []
+        invalid = []
+
+        for allergen in requested:
+
+            if allergen in SUPPORTED_ALLERGENS:
+
+                if allergen not in valid:
+                    valid.append(allergen)
+
+            else:
+
+                invalid.append(allergen)
+
+        if invalid:
+
+            Domoticz.Error(
+                "PollenForecast: Unsupported allergen(s): {}. "
+                "Permitted values: {}.".format(
+                    ", ".join(invalid),
+                    ", ".join(SUPPORTED_ALLERGENS),
+                )
+            )
+
+        # If the user supplied only invalid values,
+        # use all allergens rather than creating no devices.
+        if not valid:
+
+            Domoticz.Error(
+                "PollenForecast: No valid allergens configured, "
+                "using all allergens."
+            )
+
+            return SUPPORTED_ALLERGENS
+
+        return tuple(valid)

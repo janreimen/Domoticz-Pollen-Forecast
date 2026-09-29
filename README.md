@@ -14,7 +14,7 @@ The plugin is designed for simple Domoticz automation:
 
 ## Status
 
-**Current version:** `0.2.0-alpha`
+**Current version:** `0.2.0-beta`
 
 This is an **alpha release**.
 
@@ -554,7 +554,7 @@ Enable the `Debug` parameter in the Domoticz hardware configuration.
 The plugin then reports information such as:
 
 ```text
-PollenForecast: Starting version 0.2.0-alpha
+PollenForecast: Starting version 0.2.0-beta
 PollenForecast: Location: 49.611600, 6.131900
 PollenForecast: Language: en
 PollenForecast: Refresh interval: 60 minutes
@@ -1130,7 +1130,7 @@ Please consult the Open-Meteo documentation and the applicable CAMS data terms f
 
 # Version History
 
-## 0.2.0-alpha
+## 0.2.0-beta
 
 Current development release.
 

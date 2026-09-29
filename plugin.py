@@ -2,7 +2,7 @@
 #
 # Domoticz Pollen Forecast Plugin
 #
-# Version: 0.2.0-alpha
+# Version: 0.2.0-beta
 # Author: 4D, janreimen
 #
 # Data source:
@@ -16,7 +16,7 @@
 <plugin key="PollenForecast"
         name="Pollen Forecast"
         author="4D, janreimen"
-        version="0.2.0-alpha"
+        version="0.2.0-beta"
         externallink="https://github.com/janreimen/Domoticz-Pollen-Forecast">
 
     <description>
@@ -32,7 +32,9 @@
         </p>
 
         <p>
-            Creates pollen alert and detail devices for today and tomorrow.
+            Creates pollen alert devices for today and tomorrow.
+            Multiple selected allergens also create aggregated pollen
+            alert devices.
         </p>
     </description>
 
@@ -55,15 +57,18 @@
                width="160px"
                required="true"
                default="en">
-
             <options>
                 <option label="English" value="en" default="true"/>
                 <option label="Lëtzebuergesch" value="lb"/>
                 <option label="Deutsch" value="de"/>
                 <option label="Français" value="fr"/>
                 <option label="Nederlands" value="nl"/>
+                <option label="Italian" value="it"/>
+                <option label="Spanish" value="es"/>
+                <option label="Portuguese" value="pt"/>
+                <option label="Romanian" value="ro"/>
+                <option label="Polish" value="pl"/>
             </options>
-
         </param>
 
         <param field="Mode4"
@@ -82,6 +87,12 @@
         </param>
 
         <param field="Mode5"
+               label="Allergens"
+               width="300px"
+               required="false"
+               default=""/>
+
+        <param field="Mode6"
                label="Debug"
                width="100px"
                required="true"
@@ -108,7 +119,7 @@ from config import PluginConfig
 from devices import PollenDevices
 
 
-VERSION = "0.2.0-alpha"
+VERSION = "0.2.0-beta"
 
 
 class BasePlugin:
@@ -121,10 +132,6 @@ class BasePlugin:
         self.last_update = 0.0
         self.heartbeat_counter = 0
 
-    # ------------------------------------------------------------------
-    # Logging
-    # ------------------------------------------------------------------
-
     def log(self, message):
         if self.config and self.config.debug:
             Domoticz.Log(
@@ -135,10 +142,6 @@ class BasePlugin:
         Domoticz.Error(
             "PollenForecast: {}".format(message)
         )
-
-    # ------------------------------------------------------------------
-    # Lifecycle
-    # ------------------------------------------------------------------
 
     def onStart(self):
 
@@ -156,6 +159,7 @@ class BasePlugin:
         self.devices = PollenDevices(
             devices=Devices,
             language=self.config.language,
+            selected_allergens=self.config.allergens,
             debug=self.config.debug,
             log_fn=self.log,
         )
@@ -189,10 +193,15 @@ class BasePlugin:
             )
         )
 
+        self.log(
+            "Allergens: {}".format(
+                ", ".join(self.config.allergens)
+            )
+        )
+
         self.update()
 
     def onStop(self):
-
         self.log("Plugin stopped")
 
     def onHeartbeat(self):
@@ -207,10 +216,6 @@ class BasePlugin:
             >= self.config.refresh_minutes * 60
         ):
             self.update()
-
-    # ------------------------------------------------------------------
-    # Update
-    # ------------------------------------------------------------------
 
     def update(self):
 
@@ -249,8 +254,6 @@ class BasePlugin:
                 "Update failed: {}".format(exc)
             )
 
-            # Do not retry every 30 seconds after
-            # a network/API failure.
             self.last_update = time.time()
 
 
