@@ -1,172 +1,83 @@
 # Changelog
 
-All notable changes to **Domoticz Pollen Forecast** are documented in this file.
+All notable changes to this project are documented here.
 
-The format of this file is based on **[Keep a Changelog](https://keepachangelog.com/en/1.1.0/)**.
+The project follows Semantic Versioning-style versioning during pre-1.0 development.
 
-This project follows **[Semantic Versioning](https://semver.org/spec/v2.0.0.html)**.
+## [0.2.1-alpha] - 2026-09-30
 
----
+### Added
 
-## [Unreleased]
+- Unified location configuration field using `longitude,latitude`.
+- Validation of longitude in the range `-180..180`.
+- Validation of latitude in the range `-90..90`.
+- Czech (`cs`) language support.
+- Bulgarian (`bg`) language support.
+- Hungarian (`hu`) language support.
+- Swedish (`sv`) language support.
+- Slovak (`sk`) language support.
+- Croatian (`hr`) language support.
+- Slovenian (`sl`) language support.
+- Serbian (`sr`) language support.
+- Finnish (`fi`) language support.
+- Norwegian (`no`) language support.
+- Danish (`da`) language support.
+- Greek (`el`) language support.
+- Global pollen situation for today.
+- Global pollen situation for tomorrow.
+- General-information pollen devices independent from allergen selection.
 
-Changes that are planned or currently under development but are not yet part of a released version.
+### Changed
 
-### Planned
+- Configuration fields are shifted after combining latitude and longitude into one field.
+- The internal API continues to use named latitude and longitude values after configuration parsing.
+- The global pollen situation is calculated as the highest pollen level among the available supported pollen types.
+- The modular architecture is retained; upstream functionality is integrated as isolated features rather than copied as a monolithic implementation.
 
-* Additional pollen species where supported by the Open-Meteo API.
-* More extensive automated tests.
-* Additional API response validation.
-* Improved API failure handling.
-* Configurable pollen thresholds.
-* Additional forecast days.
-* Further documentation improvements.
-* Stable device-model compatibility before `1.0.0`.
+### Compatibility
 
----
+- Individual pollen device units remain stable internally, while device creation/update is limited to allergens selected in Mode4.
+- Selected-pollen aggregate devices remain separate from the global situation devices.
+- This is an alpha release; configuration and device models may still change before 1.0.0.
 
 ## [0.2.0-beta] - 2026-09-29
 
 ### Added
 
-- Configurable pollen allergen selection through `Mode5`.
-- Support for `alder`, `birch`, `grass`, `mugwort`, `olive`, and `ragweed`.
-- Blank `Mode5` selects all supported allergens.
-- CSV-based allergen selection.
-- Aggregate pollen level sensors for today and tomorrow when more than one allergen is selected.
-- Aggregate level calculation based on the selected allergen `nValue`s.
-- Half-up rounding at `.50` for aggregate levels.
-- `Mode6` debug setting.
-- Spanish (`es`) language support.
-- Portuguese (`pt`) language support.
-- Romanian (`ro`) language support.
-- Italian (`it`) language support.
-- Polish (`pl`) language support.
+- Configurable allergen selection through the dedicated allergen field.
+- Support for alder, birch, grass, mugwort, olive and ragweed selection.
+- Blank allergen selection means all supported allergens.
+- CSV allergen selection.
+- Selected-pollen aggregate devices for today and tomorrow when more than one allergen is selected.
+- Aggregate calculation from selected individual allergen `nValue`s.
+- `.50` half-up rounding for aggregate levels.
+- Spanish (`es`) support.
+- Portuguese (`pt`) support.
+- Romanian (`ro`) support.
+- Italian (`it`) support.
+- Polish (`pl`) support.
 
 ### Changed
 
-- Promoted the plugin from `0.2.0-alpha` to `0.2.0-beta`.
-- Moved Debug from `Mode5` to `Mode6`.
-- Expanded language support to 10 languages.
-- Extended translated device names and pollen labels.
+- Configuration consolidated into five fields: Mode1 location, Mode2 language, Mode3 refresh interval, Mode4 allergens, Mode5 debug.
+- Expanded language support.
+- Continued modular separation of configuration, API, pollen processing, devices and translations.
 
-### Technical
+## [0.2.0-alpha]
 
-- Continued modular separation of configuration, API, pollen processing, devices, and translations.
-- Unknown pollen variables returned by the API continue to receive fallback thresholds.
-- No external Python packages are required.
-* Modular plugin architecture.
-* Dedicated configuration module.
-* Dedicated Open-Meteo API client.
-* Dedicated pollen definition and level calculation module.
-* Dedicated Domoticz device handling module.
-* Dedicated translation module.
-* Support for English (`en`).
-* Support for Lëtzebuergesch (`lb`).
-* Support for Deutsch (`de`).
-* Support for Français (`fr`).
-* Support for Nederlands (`nl`).
-* Configurable latitude.
-* Configurable longitude.
-* Configurable language.
-* Configurable refresh interval.
-* Configurable debug logging.
-* Open-Meteo Air Quality API integration.
-* CAMS European Air Quality Forecast integration.
-* Four forecast days retrieved from the API.
-* Today and tomorrow exposed to Domoticz.
-* Dynamic detection of pollen variables ending in `_pollen`.
-* Support for the following pollen species:
+### Added
 
-  * Alder
-  * Birch
-  * Grass
-  * Mugwort
-  * Olive
-  * Ragweed.
-* Daily pollen concentration calculation using the maximum hourly value.
-* Native Domoticz `Alert` devices.
-* Separate Domoticz device for every pollen species and forecast day.
-* Twelve deterministic Domoticz devices:
+- Modular plugin architecture.
+- Open-Meteo CAMS pollen forecast integration.
+- Native Domoticz Alert devices for individual pollen types.
+- Today and tomorrow pollen levels.
+- Dynamic discovery of additional `_pollen` API variables.
+- Fallback thresholds for unknown pollen variables.
+- Initial translations for English, Lëtzebuergesch, German, French and Dutch.
 
-  * Alder Today
-  * Alder Tomorrow
-  * Birch Today
-  * Birch Tomorrow
-  * Grass Today
-  * Grass Tomorrow
-  * Mugwort Today
-  * Mugwort Tomorrow
-  * Olive Today
-  * Olive Tomorrow
-  * Ragweed Today
-  * Ragweed Tomorrow.
-* Native Domoticz alert-level representation:
+## Earlier development
 
-  * `0` = No data
-  * `1` = None
-  * `2` = Low
-  * `3` = Medium
-  * `4` = High.
-* Native Domoticz alert colours through the `Alert` device type.
-* Explicit pollen thresholds for the currently supported species.
-* Fallback thresholds for unknown pollen species.
-* Error handling for failed API requests.
-* Debug logging for API discovery and device updates.
-* Python standard-library-only implementation.
-* No external Python runtime dependencies.
+Earlier versions originated from the upstream Domoticz Pollen Forecast plugin and were progressively refactored into a modular implementation.
 
-### Changed
-
-* Replaced the previous cumulative pollen text-sensor model.
-* Pollen information is no longer combined into a single text sensor.
-* Pollen species are now represented by independent Domoticz devices.
-* Today and tomorrow are represented independently.
-* `PollenDevices` now receives the Domoticz `Devices` collection explicitly.
-* `PluginConfig` now receives the Domoticz `Parameters` collection explicitly.
-* API processing was separated from Domoticz device handling.
-* Translation handling was separated from the main plugin lifecycle.
-* Pollen-level calculation was separated from API processing.
-* Daily pollen values are calculated from hourly API values.
-* Unknown `_pollen` variables are handled without terminating the plugin.
-* API failures no longer cause a retry on every 30-second Domoticz heartbeat.
-
-### Removed
-
-* Cumulative pollen detail text as the primary device representation.
-* The previous four-device model:
-
-  * Pollen Alert Today
-  * Pollen Alert Tomorrow
-  * Pollen Today
-  * Pollen Tomorrow.
-* Dependency on implicit Domoticz globals inside the configuration module.
-* Dependency on implicit Domoticz globals inside the device module.
-
-### Fixed
-
-* Configuration parsing no longer relies on an undefined `Parameters` name inside `config.py`.
-* Device handling no longer relies on an undefined `Devices` name inside `devices.py`.
-* Translation access is now consistent between `translations.py` and `devices.py`.
-* Pollen-level calculation handles missing and invalid concentration values.
-* API response validation handles missing `hourly` data.
-* API response validation handles missing `time` data.
-* Plugin update failures are logged without causing continuous heartbeat retries.
-
-### Security
-
-* API communication uses HTTPS.
-* No API credentials are required by the plugin.
-* No inbound network service is opened by the plugin.
-* No shell commands are executed by the plugin.
-* No dynamic execution of API-provided data is performed.
-* Runtime dependencies are limited to the Python standard library.
-
-### Breaking Changes
-
-This alpha release changes the Domoticz device model.
-
-Previous development versions used four devices with cumulative pollen information.
-
-This release uses twelve individual `Alert`
-
+[0.2.1-alpha]: https://github.com/janreimen/Domoticz-Pollen-Forecast/releases/tag/v0.2.1-alpha
+[0.2.0-beta]: https://github.com/janreimen/Domoticz-Pollen-Forecast/releases/tag/v0.2.0-beta

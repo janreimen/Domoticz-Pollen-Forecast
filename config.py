@@ -1,216 +1,104 @@
 # -*- coding: utf-8 -*-
-"""
-Configuration handling for the Pollen Forecast plugin.
-"""
+"""Configuration handling for the Pollen Forecast plugin."""
 
 import Domoticz
 
+from pollen import ALLERGENS
 
 SUPPORTED_LANGUAGES = (
-    "en",
-    "it",
-    "es",
-    "pt",
-    "pl",
-    "ro",
-    "lb",
-    "de",
-    "fr",
-    "nl"
+    "en", "lb", "de", "fr", "nl", "es", "pt", "ro", "it", "pl",
+    "cs", "bg", "hu", "sv", "sk", "hr", "sl", "sr", "fi", "no", "da", "el",
 )
-
-SUPPORTED_ALLERGENS = (
-    "alder",
-    "birch",
-    "grass",
-    "mugwort",
-    "olive",
-    "ragweed",
-)
+SUPPORTED_ALLERGENS = ALLERGENS
+DEFAULT_LOCATION = (6.1319, 49.6116)  # longitude, latitude
 
 
 class PluginConfig:
-
-    def __init__(
-        self,
-        latitude,
-        longitude,
-        language,
-        refresh_minutes,
-        allergens,
-        debug,
-    ):
-        self.latitude = latitude
+    def __init__(self, longitude, latitude, language, refresh_minutes, allergens, debug):
         self.longitude = longitude
+        self.latitude = latitude
         self.language = language
         self.refresh_minutes = refresh_minutes
         self.allergens = allergens
         self.debug = debug
 
+    @property
+    def valid_location(self):
+        return self.longitude is not None and self.latitude is not None
+
     @classmethod
-    def from_domoticz(
-        cls,
-        parameters,
-    ):
+    def from_domoticz(cls, parameters):
+        longitude, latitude = cls._location_parameter(parameters)
 
-        latitude = cls._float_parameter(
-            parameters,
-            "Mode1",
-            49.6116,
-        )
-
-        longitude = cls._float_parameter(
-            parameters,
-            "Mode2",
-            6.1319,
-        )
-
-        language = parameters.get(
-            "Mode3",
-            "en",
-        ).strip().lower()
-
+        language = parameters.get("Mode2", "en").strip().lower()
         if language not in SUPPORTED_LANGUAGES:
-
-            Domoticz.Error(
-                "PollenForecast: Unsupported language '{}', "
-                "using English.".format(language)
-            )
-
+            Domoticz.Error("PollenForecast: Unsupported language '{}'; using en.".format(language))
             language = "en"
 
         try:
-
-            refresh_minutes = int(
-                parameters.get(
-                    "Mode4",
-                    "60",
-                )
-            )
-
+            refresh_minutes = int(parameters.get("Mode3", "60"))
         except (TypeError, ValueError):
-
-            Domoticz.Error(
-                "PollenForecast: Invalid refresh interval, "
-                "using 60 minutes."
-            )
-
+            Domoticz.Error("PollenForecast: Invalid refresh interval; using 60 minutes.")
             refresh_minutes = 60
+        refresh_minutes = max(30, refresh_minutes)
 
-        refresh_minutes = max(
-            30,
-            refresh_minutes,
-        )
+        allergens = cls._allergens_parameter(parameters)
+        debug = parameters.get("Mode5", "0") == "1"
 
-        allergens = cls._allergens_parameter(
-            parameters
-        )
-
-        debug = (
-            parameters.get(
-                "Mode6",
-                "0",
-            ) == "1"
-        )
-
-        return cls(
-            latitude=latitude,
-            longitude=longitude,
-            language=language,
-            refresh_minutes=refresh_minutes,
-            allergens=allergens,
-            debug=debug,
-        )
+        return cls(longitude, latitude, language, refresh_minutes, allergens, debug)
 
     @staticmethod
-    def _float_parameter(
-        parameters,
-        name,
-        default,
-    ):
-
-        try:
-
-            return float(
-                parameters.get(
-                    name,
-                    str(default),
-                ).strip()
-            )
-
-        except (
-            TypeError,
-            ValueError,
-        ):
-
+    def _location_parameter(parameters):
+        raw = parameters.get("Mode1", "")
+        if raw is None:
+            raw = ""
+        parts = [part.strip() for part in raw.split(",")]
+        if len(parts) != 2 or not all(parts):
             Domoticz.Error(
-                "PollenForecast: Invalid {}. "
-                "Using default {}.".format(
-                    name,
-                    default,
-                )
+                "PollenForecast: Location must be entered as longitude,latitude "
+                "(example: 177.33,-30.23)."
             )
-
-            return float(default)
+            return None, None
+        try:
+            longitude = float(parts[0])
+            latitude = float(parts[1])
+        except ValueError:
+            Domoticz.Error("PollenForecast: Location contains invalid numeric values.")
+            return None, None
+        if not -180.0 <= longitude <= 180.0:
+            Domoticz.Error("PollenForecast: Longitude must be between -180 and 180.")
+            return None, None
+        if not -90.0 <= latitude <= 90.0:
+            Domoticz.Error("PollenForecast: Latitude must be between -90 and 90.")
+            return None, None
+        return longitude, latitude
 
     @staticmethod
-    def _allergens_parameter(
-        parameters,
-    ):
-
-        value = parameters.get(
-            "Mode5",
-            "",
-        )
-
-        if value is None:
-            value = ""
-
-        value = value.strip().lower()
-
-        # Empty input means all supported allergens.
-        if not value:
+    def _allergens_parameter(parameters):
+        raw = parameters.get("Mode4", "")
+        raw = "" if raw is None else raw.strip().lower()
+        if not raw:
             return SUPPORTED_ALLERGENS
-
-        requested = [
-            item.strip()
-            for item in value.split(",")
-            if item.strip()
-        ]
 
         valid = []
         invalid = []
-
-        for allergen in requested:
-
+        for item in raw.split(","):
+            allergen = item.strip().lower()
+            if not allergen:
+                continue
             if allergen in SUPPORTED_ALLERGENS:
-
                 if allergen not in valid:
                     valid.append(allergen)
-
             else:
-
                 invalid.append(allergen)
 
         if invalid:
-
             Domoticz.Error(
-                "PollenForecast: Unsupported allergen(s): {}. "
-                "Permitted values: {}.".format(
-                    ", ".join(invalid),
-                    ", ".join(SUPPORTED_ALLERGENS),
+                "PollenForecast: Ignoring unsupported allergens: {}".format(
+                    ", ".join(invalid)
                 )
             )
-
-        # If the user supplied only invalid values,
-        # use all allergens rather than creating no devices.
         if not valid:
-
-            Domoticz.Error(
-                "PollenForecast: No valid allergens configured, "
-                "using all allergens."
-            )
-
+            Domoticz.Error("PollenForecast: No valid allergen selected; using all supported allergens.")
             return SUPPORTED_ALLERGENS
-
         return tuple(valid)

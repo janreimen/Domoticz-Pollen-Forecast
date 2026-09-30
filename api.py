@@ -1,254 +1,84 @@
 # -*- coding: utf-8 -*-
-"""
-Open-Meteo pollen API client.
-"""
+"""Open-Meteo pollen API client."""
 
 import json
 import urllib.parse
 import urllib.request
 
-from pollen import (
-    REQUESTED_POLLEN,
-    is_pollen_key,
-)
+from pollen import REQUESTED_POLLEN, is_pollen_key
 
-
-API_URL = (
-    "https://air-quality-api.open-meteo.com/v1/air-quality"
-)
-
-USER_AGENT = (
-    "Domoticz-PollenForecast/0.2.0-beta"
-)
+API_URL = "https://air-quality-api.open-meteo.com/v1/air-quality"
+USER_AGENT = "Domoticz-PollenForecast/0.2.1-alpha"
 
 
 class PollenApi:
-
-    def __init__(
-        self,
-        latitude,
-        longitude,
-        debug=False,
-        log_fn=None,
-    ):
-
+    def __init__(self, latitude, longitude, debug=False, log_fn=None):
         self.latitude = latitude
         self.longitude = longitude
         self.debug = debug
         self.log_fn = log_fn
 
-    # ------------------------------------------------------------------
-    # Logging
-    # ------------------------------------------------------------------
-
     def log(self, message):
-
         if self.debug and self.log_fn:
-            self.log_fn(
-                "API: {}".format(message)
-            )
-
-    # ------------------------------------------------------------------
-    # API
-    # ------------------------------------------------------------------
+            self.log_fn("API: {}".format(message))
 
     def fetch(self):
-
         params = {
             "latitude": self.latitude,
             "longitude": self.longitude,
-            "hourly": ",".join(
-                REQUESTED_POLLEN
-            ),
+            "hourly": ",".join(REQUESTED_POLLEN),
             "timezone": "auto",
             "forecast_days": 4,
             "domains": "cams_europe",
         }
-
-        url = (
-            API_URL
-            + "?"
-            + urllib.parse.urlencode(params)
-        )
-
-        self.log(
-            "GET {}".format(url)
-        )
-
+        url = API_URL + "?" + urllib.parse.urlencode(params)
+        self.log("GET {}".format(url))
         request = urllib.request.Request(
             url,
-            headers={
-                "User-Agent": USER_AGENT,
-                "Accept": "application/json",
-            },
+            headers={"User-Agent": USER_AGENT, "Accept": "application/json"},
         )
-
-        with urllib.request.urlopen(
-            request,
-            timeout=10,
-        ) as response:
-
+        with urllib.request.urlopen(request, timeout=10) as response:
             if response.status != 200:
-
-                raise RuntimeError(
-                    "HTTP {}".format(
-                        response.status
-                    )
-                )
-
-            payload = response.read().decode(
-                "utf-8"
-            )
-
+                raise RuntimeError("HTTP {}".format(response.status))
+            payload = response.read().decode("utf-8")
         data = json.loads(payload)
-
         if data.get("error"):
-
-            raise RuntimeError(
-                data.get(
-                    "reason",
-                    "Open-Meteo API error",
-                )
-            )
-
-        hourly = data.get(
-            "hourly"
-        )
-
-        if not isinstance(
-            hourly,
-            dict,
-        ):
-
-            raise ValueError(
-                "Invalid API response: "
-                "missing hourly data"
-            )
-
-        if "time" not in hourly:
-
-            raise ValueError(
-                "Invalid API response: "
-                "missing time"
-            )
-
-        self._log_discovered_species(
-            hourly
-        )
-
+            raise RuntimeError(data.get("reason", "Open-Meteo API error"))
+        hourly = data.get("hourly")
+        if not isinstance(hourly, dict) or "time" not in hourly:
+            raise ValueError("Invalid API response: missing hourly time data")
+        self._log_discovered_species(hourly)
         return data
 
-    # ------------------------------------------------------------------
-    # Diagnostics
-    # ------------------------------------------------------------------
+    def _log_discovered_species(self, hourly):
+        discovered = sorted(key for key in hourly if is_pollen_key(key))
+        self.log("Pollen variables returned by API: {}".format(", ".join(discovered) if discovered else "none"))
 
-    def _log_discovered_species(
-        self,
-        hourly,
-    ):
-
-        discovered = sorted(
-            key
-            for key in hourly.keys()
-            if is_pollen_key(key)
-        )
-
-        self.log(
-            "Pollen variables returned by API: {}".format(
-                ", ".join(discovered)
-                if discovered
-                else "none"
-            )
-        )
-
-    # ------------------------------------------------------------------
-    # Daily aggregation
-    # ------------------------------------------------------------------
-
-    def build_daily_data(
-        self,
-        data,
-    ):
-
+    def build_daily_data(self, data):
         hourly = data["hourly"]
-
-        times = hourly.get(
-            "time",
-            [],
-        )
-
+        times = hourly.get("time", [])
         if not times:
             return []
-
         dates = []
-
         for timestamp in times:
-
             date = timestamp[:10]
-
             if date not in dates:
                 dates.append(date)
-
-        pollen_keys = sorted(
-            key
-            for key in hourly.keys()
-            if is_pollen_key(key)
-        )
-
+        pollen_keys = sorted(key for key in hourly if is_pollen_key(key))
         result = []
-
         for date in dates:
-
-            item = {
-                "date": date,
-                "values": {},
-            }
-
-            indices = [
-                index
-                for index, timestamp
-                in enumerate(times)
-                if timestamp.startswith(date)
-            ]
-
+            item = {"date": date, "values": {}}
+            indices = [i for i, timestamp in enumerate(times) if timestamp.startswith(date)]
             for pollen_key in pollen_keys:
-
-                series = hourly.get(
-                    pollen_key,
-                    [],
-                )
-
+                series = hourly.get(pollen_key, [])
                 values = []
-
                 for index in indices:
-
-                    if index >= len(series):
+                    if index >= len(series) or series[index] is None:
                         continue
-
-                    value = series[index]
-
-                    if value is None:
-                        continue
-
                     try:
-
-                        values.append(
-                            float(value)
-                        )
-
-                    except (
-                        TypeError,
-                        ValueError,
-                    ):
-
+                        values.append(float(series[index]))
+                    except (TypeError, ValueError):
                         continue
-
-                item["values"][pollen_key] = (
-                    max(values)
-                    if values
-                    else None
-                )
-
+                item["values"][pollen_key] = max(values) if values else None
             result.append(item)
-
         return result
