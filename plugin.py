@@ -2,7 +2,7 @@
 #
 # Domoticz Pollen Forecast Plugin
 #
-# Version: 0.2.1-beta
+# Version: 0.2.2
 # Authors: 4D, blooesky, janreimen
 #
 # Data source: Open-Meteo Air Quality API / CAMS European Air Quality Forecast
@@ -13,9 +13,8 @@
 <plugin key="PollenForecast"
         name="Pollen Forecast"
         author="4D, blooesky, janreimen"
-        version="0.2.1-beta"
+        version="0.2.2"
         externallink="https://github.com/janreimen/Domoticz-Pollen-Forecast">
-
     <description>
         <h2>Pollen Forecast</h2>
         <p>
@@ -33,7 +32,6 @@
             Srpski, Suomi, Norsk, Dansk and Ελληνικά.
         </p>
     </description>
-
     <params>
         <param field="Mode1"
                label="Location (longitude,latitude)"
@@ -41,11 +39,11 @@
                required="false"
                default="">
             <description>
-                Optional. Enter longitude,latitude to override the Domoticz system location.
-                Leave empty to use the latitude and longitude configured in Domoticz.
+                Optional. Enter longitude,latitude to override the Domoticz
+                system location. Leave empty to use the Domoticz location,
+                with the plugin .env defaults as fallback.
             </description>
         </param>
-
         <param field="Mode2"
                label="Language"
                width="180px"
@@ -76,7 +74,6 @@
                 <option label="Ελληνικά" value="el"/>
             </options>
         </param>
-
         <param field="Mode3"
                label="Refresh interval"
                width="180px"
@@ -87,18 +84,14 @@
                 <option label="60 minutes" value="60" default="true"/>
                 <option label="3 hours" value="180"/>
                 <option label="6 hours" value="360"/>
-                <option label="12 hours" value="720"/>
-                <option label="1 day" value="1440"/>
             </options>
         </param>
-
         <param field="Mode4"
                label="Allergens"
                width="260px"
                required="false"
                default="">
         </param>
-
         <param field="Mode5"
                label="Debug"
                width="100px"
@@ -121,7 +114,8 @@ from api import PollenApi
 from config import PluginConfig
 from devices import PollenDevices
 
-VERSION = "0.2.1-beta"
+
+VERSION = "0.2.2"
 
 
 class BasePlugin:
@@ -139,10 +133,17 @@ class BasePlugin:
         Domoticz.Error("PollenForecast: {}".format(message))
 
     def onStart(self):
-        self.config = PluginConfig.from_domoticz(Parameters, Settings)
+        self.config = PluginConfig.from_domoticz(
+            Parameters,
+            Settings,
+        )
 
         if not self.config.valid_location:
-            self.error("Invalid location; configure Mode1 as longitude,latitude or leave it empty to use Domoticz coordinates.")
+            self.error(
+                "Invalid location; configure Mode1 as longitude,latitude "
+                "or leave it empty to use Domoticz coordinates or the "
+                ".env defaults."
+            )
             Domoticz.Heartbeat(30)
             return
 
@@ -160,14 +161,40 @@ class BasePlugin:
             debug=self.config.debug,
             log_fn=self.log,
         )
+
         self.devices.create()
 
         Domoticz.Heartbeat(30)
+
         self.log("Starting version {}".format(VERSION))
-        self.log("Location: longitude={:.6f}, latitude={:.6f} (source: {})".format(self.config.longitude, self.config.latitude, self.config.location_source))
-        self.log("Language: {}".format(self.config.language))
-        self.log("Refresh interval: {} minutes".format(self.config.refresh_minutes))
-        self.log("Selected allergens: {}".format(", ".join(self.config.allergens)))
+
+        self.log(
+            "Location: longitude={:.6f}, latitude={:.6f} "
+            "(source: {})".format(
+                self.config.longitude,
+                self.config.latitude,
+                self.config.location_source,
+            )
+        )
+
+        self.log(
+            "Language: {}".format(
+                self.config.language,
+            )
+        )
+
+        self.log(
+            "Refresh interval: {} minutes".format(
+                self.config.refresh_minutes,
+            )
+        )
+
+        self.log(
+            "Selected allergens: {}".format(
+                ", ".join(self.config.allergens),
+            )
+        )
+
         self.update()
 
     def onStop(self):
@@ -176,23 +203,40 @@ class BasePlugin:
     def onHeartbeat(self):
         if self.config is None or not self.config.valid_location:
             return
+
         if time.time() - self.last_update >= self.config.refresh_minutes * 60:
             self.update()
 
     def update(self):
         if self.api is None or self.devices is None:
             return
+
         self.log("Updating pollen forecast")
+
         try:
             data = self.api.fetch()
             days = self.api.build_daily_data(data)
+
             if len(days) < 2:
-                raise ValueError("API response does not contain today and tomorrow")
+                raise ValueError(
+                    "API response does not contain today and tomorrow"
+                )
+
             self.devices.update_days(days)
+
             self.last_update = time.time()
-            self.log("Pollen forecast updated successfully ({} forecast days received)".format(len(days)))
+
+            self.log(
+                "Pollen forecast updated successfully "
+                "({} forecast days received)".format(
+                    len(days)
+                )
+            )
+
         except Exception as exc:
-            self.error("Update failed: {}".format(exc))
+            self.error(
+                "Update failed: {}".format(exc)
+            )
             self.last_update = time.time()
 
 

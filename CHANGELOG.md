@@ -1,101 +1,182 @@
-# Changelog
+Changelog
 
-All notable changes to this project are documented here.
+All notable changes to Domoticz Pollen Forecast are documented here.
 
-The project follows Semantic Versioning-style versioning during pre-1.0 development.
+"0.2.2" (https://github.com/janreimen/Domoticz-Pollen-Forecast/releases/tag/v0.2.2) - 2026-09-30
 
-## [0.2.1-beta] - 2026-09-30
+Added
 
-### Added
+- Robust location resolution with a defined fallback order:
+  1. Explicit "Mode1" "longitude,latitude"
+  2. Domoticz system coordinates
+  3. Plugin defaults from ".env"
+- Support for the current Domoticz Python plugin representation:
+  "Settings["Location"] = "latitude;longitude"".
+- Validation of ".env" default longitude and latitude values.
+- Location source reporting through the existing debug logging.
 
-- Use Domoticz system latitude/longitude automatically when Mode1 Location is left empty.
-- Keep explicit `longitude,latitude` input as a location override.
-- Log whether the effective location came from Mode1 or Domoticz.
+Changed
 
-### Changed
+- Leaving "Mode1" empty now uses the Domoticz system location.
+- If the Domoticz system location is unavailable or invalid, the plugin falls back to:
+  - "POLLEN_DEFAULT_LONGITUDE"
+  - "POLLEN_DEFAULT_LATITUDE"
+- Explicitly configured "Mode1" values remain authoritative.
+- An invalid explicitly configured "Mode1" value is reported as a configuration error rather than silently falling back.
+- Location handling remains isolated in "config.py".
 
-- Remove the hard-coded Luxembourg coordinates as the plugin default.
-- Make Mode1 Location optional.
+Fixed
 
-### Validation
+- Fixed the failure where an empty "Mode1" produced:
+  "Mode1 is empty, but valid Domoticz system latitude/longitude could not be read."
+- Fixed parsing of the Domoticz "Settings["Location"]" string.
+- Correctly handles Domoticz's "latitude;longitude" representation.
+- Prevented valid Domoticz coordinates from being rejected because the configuration handler expected a dictionary representation.
 
-- Invalid explicit coordinates remain an error and do not silently fall back to Domoticz coordinates.
-- Existing allergen-driven device provisioning, fixed unit mapping, selected-pollen units and global-situation units are unchanged from `0.2.1-alpha`.
+Configuration
 
-## [0.2.1-alpha] - 2026-09-30
+The plugin accepts an explicit location in the format:
 
-### Added
+longitude,latitude
 
-- Unified location configuration field using `longitude,latitude`.
-- Validation of longitude in the range `-180..180`.
-- Validation of latitude in the range `-90..90`.
-- Czech (`cs`) language support.
-- Bulgarian (`bg`) language support.
-- Hungarian (`hu`) language support.
-- Swedish (`sv`) language support.
-- Slovak (`sk`) language support.
-- Croatian (`hr`) language support.
-- Slovenian (`sl`) language support.
-- Serbian (`sr`) language support.
-- Finnish (`fi`) language support.
-- Norwegian (`no`) language support.
-- Danish (`da`) language support.
-- Greek (`el`) language support.
-- Global pollen situation for today.
-- Global pollen situation for tomorrow.
-- General-information pollen devices independent from allergen selection.
+For example:
 
-### Changed
+6.247261,49.714920
 
-- Configuration fields are shifted after combining latitude and longitude into one field.
-- The internal API continues to use named latitude and longitude values after configuration parsing.
-- The global pollen situation is calculated as the highest pollen level among the available supported pollen types.
-- The modular architecture is retained; upstream functionality is integrated as isolated features rather than copied as a monolithic implementation.
+When "Mode1" is empty, the plugin first uses the location configured in Domoticz.
 
-### Compatibility
+If no valid Domoticz system location is available, the plugin uses the defaults from ".env":
 
-- Individual pollen device units remain stable internally, while device creation/update is limited to allergens selected in Mode4.
-- Selected-pollen aggregate devices remain separate from the global situation devices.
-- This is an alpha release; configuration and device models may still change before 1.0.0.
+POLLEN_DEFAULT_LONGITUDE=6.1319
+POLLEN_DEFAULT_LATITUDE=49.6116
 
-## [0.2.0-beta] - 2026-09-29
+An error is reported only when no valid location can be obtained from any source.
 
-### Added
+---
 
-- Configurable allergen selection through the dedicated allergen field.
-- Support for alder, birch, grass, mugwort, olive and ragweed selection.
-- Blank allergen selection means all supported allergens.
-- CSV allergen selection.
-- Selected-pollen aggregate devices for today and tomorrow when more than one allergen is selected.
-- Aggregate calculation from selected individual allergen `nValue`s.
-- `.50` half-up rounding for aggregate levels.
-- Spanish (`es`) support.
-- Portuguese (`pt`) support.
-- Romanian (`ro`) support.
-- Italian (`it`) support.
-- Polish (`pl`) support.
+"0.2.1-beta" (https://github.com/janreimen/Domoticz-Pollen-Forecast/releases/tag/v0.2.1-beta)
 
-### Changed
+Added
 
-- Configuration consolidated into five fields: Mode1 location, Mode2 language, Mode3 refresh interval, Mode4 allergens, Mode5 debug.
+- Individual pollen devices can be created only for the selected allergens.
+- Fixed internal unit mapping for all pollen types is preserved.
+- Existing pollen devices are preserved when the selected allergens change.
+- Selected-pollen aggregate devices use units "100" and "101".
+- Global pollen situation devices use units "110" and "111".
 - Expanded language support.
-- Continued modular separation of configuration, API, pollen processing, devices and translations.
+- Modular configuration and device handling.
 
-## [0.2.0-alpha]
+---
 
-### Added
+[0.2.0]
 
-- Modular plugin architecture.
-- Open-Meteo CAMS pollen forecast integration.
-- Native Domoticz Alert devices for individual pollen types.
-- Today and tomorrow pollen levels.
-- Dynamic discovery of additional `_pollen` API variables.
-- Fallback thresholds for unknown pollen variables.
-- Initial translations for English, Lëtzebuergesch, German, French and Dutch.
+Added
 
-## Earlier development
+- Open-Meteo Air Quality / CAMS European Air Quality pollen forecast integration.
+- Individual pollen forecast devices.
+- Today and tomorrow pollen information.
+- Configurable refresh interval.
+- Configurable allergen selection.
+- Multi-language support.
+- Debug logging.
 
-Earlier versions originated from the upstream Domoticz Pollen Forecast plugin and were progressively refactored into a modular implementation.
+:::
 
-[0.2.1-beta]: https://github.com/janreimen/Domoticz-Pollen-Forecast/releases/tag/v0.2.1-beta
-[0.2.0-beta]: https://github.com/janreimen/Domoticz-Pollen-Forecast/releases/tag/v0.2.0-beta
+### README — location/configuration section
+
+:::writing{variant="document" id="92751" title="README.md — v0.2.2 configuration section"}
+## Location configuration
+
+The plugin supports explicit coordinates, the Domoticz system location, and configurable fallback coordinates.
+
+### Location priority
+
+The location is resolved in this order:
+
+```text
+1. Mode1
+      ↓
+2. Domoticz system location
+      ↓
+3. .env defaults
+      ↓
+4. Configuration error
+
+1. Explicit plugin location
+
+The Location (longitude,latitude) field ("Mode1") can be used to override the Domoticz system location.
+
+Enter coordinates as:
+
+longitude,latitude
+
+Example:
+
+6.247261,49.714920
+
+The order is always longitude first, latitude second.
+
+If "Mode1" contains a value but that value is invalid, the plugin reports a configuration error. It does not silently use another location.
+
+2. Domoticz system location
+
+Leave "Mode1" empty to use the location configured in Domoticz.
+
+The current Domoticz Python plugin interface provides this through:
+
+Settings["Location"]
+
+with the format:
+
+latitude;longitude
+
+For example:
+
+49.71492;6.247261
+
+The plugin converts this internally to its normal longitude/latitude representation.
+
+3. ".env" fallback
+
+If "Mode1" is empty and Domoticz does not provide a valid system location, the plugin uses the following environment variables:
+
+POLLEN_DEFAULT_LONGITUDE=6.1319
+POLLEN_DEFAULT_LATITUDE=49.6116
+
+These values are fallback defaults only. They do not override a valid Domoticz system location.
+
+Location source
+
+When debug logging is enabled, the plugin reports the selected source:
+
+PollenForecast: Location: longitude=6.247261, latitude=49.714920 (source: domoticz)
+
+or:
+
+PollenForecast: Location: longitude=6.131900, latitude=49.611600 (source: default)
+
+or:
+
+PollenForecast: Location: longitude=6.247261, latitude=49.714920 (source: plugin)
+
+Environment configuration
+
+The ".env" file should contain:
+
+POLLEN_DEFAULT_LONGITUDE=6.1319
+POLLEN_DEFAULT_LATITUDE=49.6116
+
+Do not commit a production ".env" file if it contains other private configuration. Use ".env.example" as the template.
+
+Configuration summary
+
+Setting| Purpose
+"Mode1"| Optional explicit "longitude,latitude"
+"Mode2"| Forecast language
+"Mode3"| Refresh interval
+"Mode4"| Selected allergens
+"Mode5"| Debug logging
+"POLLEN_DEFAULT_LONGITUDE"| Fallback longitude
+"POLLEN_DEFAULT_LATITUDE"| Fallback latitude
+
+The ".env" location is used only when "Mode1" is empty and no valid Domoticz system location is available.

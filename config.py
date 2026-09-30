@@ -37,7 +37,10 @@ class PluginConfig:
 
     @property
     def valid_location(self):
-        return self.longitude is not None and self.latitude is not None
+        return (
+            self.longitude is not None
+            and self.latitude is not None
+        )
 
     @classmethod
     def from_domoticz(cls, parameters, settings=None):
@@ -57,10 +60,13 @@ class PluginConfig:
             language = "en"
 
         try:
-            refresh_minutes = int(parameters.get("Mode3", "60"))
+            refresh_minutes = int(
+                parameters.get("Mode3", "60")
+            )
         except (TypeError, ValueError):
             Domoticz.Error(
-                "PollenForecast: Invalid refresh interval; using 60 minutes."
+                "PollenForecast: Invalid refresh interval; "
+                "using 60 minutes."
             )
             refresh_minutes = 60
 
@@ -86,6 +92,7 @@ class PluginConfig:
         Resolve the plugin location.
 
         Priority:
+
             1. Explicit Mode1 longitude,latitude
             2. Domoticz system coordinates
             3. .env default coordinates
@@ -96,9 +103,9 @@ class PluginConfig:
 
         # 1. Explicit plugin location.
         #
-        # If Mode1 contains a value, it must be valid. Do not silently
-        # fall back to another location if the user explicitly entered
-        # an invalid value.
+        # If Mode1 contains a value, it must be valid.
+        # Do not silently fall back if the user explicitly
+        # entered an invalid location.
         if raw:
             longitude, latitude = cls._parse_location(raw)
 
@@ -117,6 +124,14 @@ class PluginConfig:
         longitude, latitude = cls._default_location()
 
         if longitude is not None and latitude is not None:
+            Domoticz.Log(
+                "PollenForecast: Using default location from .env: "
+                "longitude={:.6f}, latitude={:.6f}".format(
+                    longitude,
+                    latitude,
+                )
+            )
+
             return longitude, latitude, "default"
 
         # 4. No usable location.
@@ -124,8 +139,8 @@ class PluginConfig:
             "PollenForecast: No valid location available; "
             "configure Mode1 as longitude,latitude, configure valid "
             "Domoticz coordinates, or set "
-            "POLLEN_DEFAULT_LONGITUDE and POLLEN_DEFAULT_LATITUDE "
-            "in .env."
+            "POLLEN_DEFAULT_LONGITUDE and "
+            "POLLEN_DEFAULT_LATITUDE in .env."
         )
 
         return None, None, "none"
@@ -136,14 +151,19 @@ class PluginConfig:
         Parse an explicit plugin location.
 
         Expected format:
+
             longitude,latitude
         """
-        parts = [part.strip() for part in raw.split(",")]
+        parts = [
+            part.strip()
+            for part in raw.split(",")
+        ]
 
         if len(parts) != 2 or not all(parts):
             Domoticz.Error(
                 "PollenForecast: Location must be entered as "
-                "longitude,latitude (example: 177.33,-30.23)."
+                "longitude,latitude "
+                "(example: 177.33,-30.23)."
             )
             return None, None
 
@@ -152,19 +172,22 @@ class PluginConfig:
             latitude = float(parts[1])
         except ValueError:
             Domoticz.Error(
-                "PollenForecast: Location contains invalid numeric values."
+                "PollenForecast: Location contains "
+                "invalid numeric values."
             )
             return None, None
 
         if not -180.0 <= longitude <= 180.0:
             Domoticz.Error(
-                "PollenForecast: Longitude must be between -180 and 180."
+                "PollenForecast: Longitude must be between "
+                "-180 and 180."
             )
             return None, None
 
         if not -90.0 <= latitude <= 90.0:
             Domoticz.Error(
-                "PollenForecast: Latitude must be between -90 and 90."
+                "PollenForecast: Latitude must be between "
+                "-90 and 90."
             )
             return None, None
 
@@ -183,17 +206,19 @@ class PluginConfig:
 
             "49.71492;6.247261"
 
-        Dictionary-style and legacy Latitude/Longitude representations
-        are also supported for compatibility.
+        Dictionary-style and legacy Latitude/Longitude
+        representations are also supported.
         """
         location = settings.get("Location")
 
         # Current Domoticz representation:
         #
         #     Location = "latitude;longitude"
-        #
         if isinstance(location, str):
-            parts = [part.strip() for part in location.split(";", 1)]
+            parts = [
+                part.strip()
+                for part in location.split(";", 1)
+            ]
 
             if len(parts) != 2:
                 return None, None
@@ -207,16 +232,24 @@ class PluginConfig:
         # Dictionary-style representation.
         elif isinstance(location, dict):
             try:
-                latitude = float(location.get("Latitude"))
-                longitude = float(location.get("Longitude"))
+                latitude = float(
+                    location.get("Latitude")
+                )
+                longitude = float(
+                    location.get("Longitude")
+                )
             except (TypeError, ValueError):
                 return None, None
 
         # Legacy/fallback representation.
         else:
             try:
-                latitude = float(settings.get("Latitude"))
-                longitude = float(settings.get("Longitude"))
+                latitude = float(
+                    settings.get("Latitude")
+                )
+                longitude = float(
+                    settings.get("Longitude")
+                )
             except (TypeError, ValueError):
                 return None, None
 
@@ -240,10 +273,17 @@ class PluginConfig:
         """
         try:
             longitude = float(
-                os.environ.get("POLLEN_DEFAULT_LONGITUDE", "")
+                os.environ.get(
+                    "POLLEN_DEFAULT_LONGITUDE",
+                    "",
+                )
             )
+
             latitude = float(
-                os.environ.get("POLLEN_DEFAULT_LATITUDE", "")
+                os.environ.get(
+                    "POLLEN_DEFAULT_LATITUDE",
+                    "",
+                )
             )
         except (TypeError, ValueError):
             return None, None
