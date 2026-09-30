@@ -101,25 +101,45 @@ class PluginConfig:
 
     @classmethod
     def _domoticz_location(cls, settings):
-        """Return Domoticz system longitude/latitude from the Settings dict."""
+        """Return Domoticz system longitude/latitude from Settings."""
         location = settings.get("Location")
-        if isinstance(location, dict):
-            latitude = location.get("Latitude")
-            longitude = location.get("Longitude")
-        else:
-            latitude = settings.get("Latitude")
-            longitude = settings.get("Longitude")
 
-        try:
-            latitude = float(latitude)
-            longitude = float(longitude)
-        except (TypeError, ValueError):
+        # Current Domoticz Python plugin API:
+        # Location = "latitude;longitude"
+        if isinstance(location, str):
+            parts = [part.strip() for part in location.split(";", 1)]
+
+            if len(parts) != 2:
+                return None, None
+
+            try:
+                latitude = float(parts[0])
+                longitude = float(parts[1])
+            except (TypeError, ValueError):
+                return None, None
+
+        # Keep support for dictionary-style location data.
+        elif isinstance(location, dict):
+            try:
+                latitude = float(location.get("Latitude"))
+                longitude = float(location.get("Longitude"))
+            except (TypeError, ValueError):
+                return None, None
+
+        # Legacy/fallback representation.
+        else:
+            try:
+                latitude = float(settings.get("Latitude"))
+                longitude = float(settings.get("Longitude"))
+            except (TypeError, ValueError):
+                return None, None
+
+        if not -90.0 <= latitude <= 90.0:
             return None, None
 
         if not -180.0 <= longitude <= 180.0:
             return None, None
-        if not -90.0 <= latitude <= 90.0:
-            return None, None
+
         return longitude, latitude
 
     @staticmethod

@@ -87,6 +87,8 @@
                 <option label="60 minutes" value="60" default="true"/>
                 <option label="3 hours" value="180"/>
                 <option label="6 hours" value="360"/>
+                <option label="12 hours" value="720"/>
+                <option label="1 day" value="1440"/>
             </options>
         </param>
 
