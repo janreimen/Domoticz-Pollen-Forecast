@@ -1,6 +1,6 @@
 # Deployment
 
-**Version:** 0.2.1-alpha
+**Version:** 0.2.1-beta
 
 ## Requirements
 
@@ -55,7 +55,7 @@ For a tagged release:
 
 ```bash
 git fetch --tags
-git checkout v0.2.1-alpha
+git checkout v0.2.1-beta
 ```
 
 ## File ownership
@@ -217,3 +217,8 @@ Device units are deliberately stable for individual pollen devices, but only sel
 For example, selecting `alder,birch` creates/updates individual units 1-4 plus the applicable aggregate/global units. Grass, Mugwort, Olive and Ragweed are not created. If they existed from an earlier configuration, they remain in Domoticz but are no longer updated.
 
 Do not delete or recreate devices automatically as part of normal updates, because that could break existing Domoticz automation references.
+
+
+## Location
+
+For `0.2.1-beta`, Mode1 may be left empty. In that case the plugin automatically uses the latitude and longitude configured under Domoticz system settings. Enter `longitude,latitude` only when an explicit override is required.

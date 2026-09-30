@@ -1,6 +1,6 @@
 # Domoticz Pollen Forecast
 
-**Version:** 0.2.1-alpha  
+**Version:** 0.2.1-beta  
 **Author:** 4D, blooesky, janreimen
 
 A modular Domoticz Python plugin that retrieves pollen forecasts from the Open-Meteo Air Quality API using the CAMS European Air Quality Forecast.
@@ -21,7 +21,7 @@ No API key and no external Python packages are required.
 - Individual native Domoticz Alert devices for each pollen type and day.
 - User-selectable allergen aggregation.
 - A separate global pollen situation for today and tomorrow.
-- Twenty-two supported languages in 0.2.1-alpha:
+- Twenty-two supported languages in 0.2.1-beta:
 - English (`en`)
   - Lëtzebuergesch (`lb`)
   - Deutsch (`de`)
@@ -46,7 +46,7 @@ No API key and no external Python packages are required.
   - Ελληνικά (`el`)
 - Standard-library-only implementation.
 
-## 0.2.1-alpha changes
+## 0.2.1-beta changes
 
 ### Unified location field
 
@@ -169,6 +169,23 @@ These values are directly usable in Domoticz automation.
 
 ## Configuration
 
+### Location
+
+`Mode1` is optional and accepts `longitude,latitude`.
+
+- If entered, the explicit coordinates are validated and used.
+- If empty, the plugin uses the latitude/longitude configured in Domoticz system settings.
+- Invalid explicit coordinates are rejected; the plugin does not silently fall back to Domoticz coordinates.
+
+Example override:
+
+```text
+6.1319,49.6116
+```
+
+The effective location source is logged as either `plugin` or `domoticz`.
+
+
 The plugin configuration consists of:
 
 1. **Location** — `longitude,latitude` (`Mode1`)
@@ -195,7 +212,7 @@ The plugin requests four forecast days internally and exposes today and tomorrow
 
 ## PyPluginStore compatibility
 
-The repository is structured as a standard Domoticz Python plugin and keeps its plugin metadata embedded in `plugin.py`. The metadata identifies the project as `PollenForecast`, version `0.2.1-alpha`, with authors `4D, blooesky, janreimen`, and points to the GitHub repository. This allows Git-based plugin-store tooling such as PyPluginStore to identify the plugin and its version.
+The repository is structured as a standard Domoticz Python plugin and keeps its plugin metadata embedded in `plugin.py`. The metadata identifies the project as `PollenForecast`, version `0.2.1-beta`, with authors `4D, blooesky, janreimen`, and points to the GitHub repository. This allows Git-based plugin-store tooling such as PyPluginStore to identify the plugin and its version.
 
 ## Requirements
 

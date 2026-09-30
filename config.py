@@ -10,13 +10,13 @@ SUPPORTED_LANGUAGES = (
     "cs", "bg", "hu", "sv", "sk", "hr", "sl", "sr", "fi", "no", "da", "el",
 )
 SUPPORTED_ALLERGENS = ALLERGENS
-DEFAULT_LOCATION = (6.1319, 49.6116)  # longitude, latitude
 
 
 class PluginConfig:
-    def __init__(self, longitude, latitude, language, refresh_minutes, allergens, debug):
+    def __init__(self, longitude, latitude, location_source, language, refresh_minutes, allergens, debug):
         self.longitude = longitude
         self.latitude = latitude
+        self.location_source = location_source
         self.language = language
         self.refresh_minutes = refresh_minutes
         self.allergens = allergens
@@ -27,8 +27,8 @@ class PluginConfig:
         return self.longitude is not None and self.latitude is not None
 
     @classmethod
-    def from_domoticz(cls, parameters):
-        longitude, latitude = cls._location_parameter(parameters)
+    def from_domoticz(cls, parameters, settings=None):
+        longitude, latitude, location_source = cls._location_parameter(parameters, settings or {})
 
         language = parameters.get("Mode2", "en").strip().lower()
         if language not in SUPPORTED_LANGUAGES:
@@ -45,13 +45,39 @@ class PluginConfig:
         allergens = cls._allergens_parameter(parameters)
         debug = parameters.get("Mode5", "0") == "1"
 
-        return cls(longitude, latitude, language, refresh_minutes, allergens, debug)
+        return cls(
+            longitude,
+            latitude,
+            location_source,
+            language,
+            refresh_minutes,
+            allergens,
+            debug,
+        )
+
+    @classmethod
+    def _location_parameter(cls, parameters, settings):
+        raw = parameters.get("Mode1", "")
+        raw = "" if raw is None else raw.strip()
+
+        # An empty Mode1 explicitly means: use Domoticz system coordinates.
+        if not raw:
+            longitude, latitude = cls._domoticz_location(settings)
+            if longitude is None or latitude is None:
+                Domoticz.Error(
+                    "PollenForecast: Mode1 is empty, but valid Domoticz system "
+                    "latitude/longitude could not be read."
+                )
+                return None, None, "domoticz"
+            return longitude, latitude, "domoticz"
+
+        longitude, latitude = cls._parse_location(raw)
+        if longitude is None or latitude is None:
+            return None, None, "plugin"
+        return longitude, latitude, "plugin"
 
     @staticmethod
-    def _location_parameter(parameters):
-        raw = parameters.get("Mode1", "")
-        if raw is None:
-            raw = ""
+    def _parse_location(raw):
         parts = [part.strip() for part in raw.split(",")]
         if len(parts) != 2 or not all(parts):
             Domoticz.Error(
@@ -70,6 +96,29 @@ class PluginConfig:
             return None, None
         if not -90.0 <= latitude <= 90.0:
             Domoticz.Error("PollenForecast: Latitude must be between -90 and 90.")
+            return None, None
+        return longitude, latitude
+
+    @classmethod
+    def _domoticz_location(cls, settings):
+        """Return Domoticz system longitude/latitude from the Settings dict."""
+        location = settings.get("Location")
+        if isinstance(location, dict):
+            latitude = location.get("Latitude")
+            longitude = location.get("Longitude")
+        else:
+            latitude = settings.get("Latitude")
+            longitude = settings.get("Longitude")
+
+        try:
+            latitude = float(latitude)
+            longitude = float(longitude)
+        except (TypeError, ValueError):
+            return None, None
+
+        if not -180.0 <= longitude <= 180.0:
+            return None, None
+        if not -90.0 <= latitude <= 90.0:
             return None, None
         return longitude, latitude
 

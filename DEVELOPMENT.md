@@ -1,6 +1,6 @@
 # Development
 
-**Version:** 0.2.1-alpha
+**Version:** 0.2.1-beta
 
 ## Architecture
 
@@ -85,7 +85,7 @@ No translation logic should be embedded in the device implementation.
 Current development version:
 
 ```text
-0.2.1-alpha
+0.2.1-beta
 ```
 
 Version consistency should be checked across:
@@ -221,8 +221,13 @@ New language additions should be added to:
 
 ## Compatibility
 
-This is an alpha release.
+This is a beta release.
 
 Device creation and configuration behavior may still change before 1.0.0.
 
 Existing Domoticz automation should not depend on experimental aggregate units until the device model is declared stable.
+
+
+### Location resolution
+
+`config.py` owns location resolution. It accepts an explicit `Mode1` override or reads the Domoticz system location from the Python plugin `Settings` dictionary when Mode1 is empty. The API and device layers receive only the resolved numeric coordinates.

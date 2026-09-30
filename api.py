@@ -8,7 +8,7 @@ import urllib.request
 from pollen import REQUESTED_POLLEN, is_pollen_key
 
 API_URL = "https://air-quality-api.open-meteo.com/v1/air-quality"
-USER_AGENT = "Domoticz-PollenForecast/0.2.1-alpha"
+USER_AGENT = "Domoticz-PollenForecast/0.2.1-beta"
 
 
 class PollenApi:

@@ -1,7 +1,7 @@
 # Security Policy
 
 **Project:** Domoticz Pollen Forecast  
-**Current development version:** 0.2.1-alpha
+**Current development version:** 0.2.1-beta
 
 ## Supported versions
 
@@ -9,7 +9,7 @@ This project is under active development.
 
 | Version | Status |
 |---|---|
-| 0.2.1-alpha | Development |
+| 0.2.1-beta | Development |
 | 0.2.0-beta | Previous beta |
 | Older versions | Unsupported |
 

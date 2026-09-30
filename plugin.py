@@ -2,7 +2,7 @@
 #
 # Domoticz Pollen Forecast Plugin
 #
-# Version: 0.2.1-alpha
+# Version: 0.2.1-beta
 # Authors: 4D, blooesky, janreimen
 #
 # Data source: Open-Meteo Air Quality API / CAMS European Air Quality Forecast
@@ -13,7 +13,7 @@
 <plugin key="PollenForecast"
         name="Pollen Forecast"
         author="4D, blooesky, janreimen"
-        version="0.2.1-alpha"
+        version="0.2.1-beta"
         externallink="https://github.com/janreimen/Domoticz-Pollen-Forecast">
 
     <description>
@@ -38,8 +38,13 @@
         <param field="Mode1"
                label="Location (longitude,latitude)"
                width="220px"
-               required="true"
-               default="6.1319,49.6116"/>
+               required="false"
+               default="">
+            <description>
+                Optional. Enter longitude,latitude to override the Domoticz system location.
+                Leave empty to use the latitude and longitude configured in Domoticz.
+            </description>
+        </param>
 
         <param field="Mode2"
                label="Language"
@@ -89,7 +94,8 @@
                label="Allergens"
                width="260px"
                required="false"
-               default=""/>
+               default="">
+        </param>
 
         <param field="Mode5"
                label="Debug"
@@ -113,7 +119,7 @@ from api import PollenApi
 from config import PluginConfig
 from devices import PollenDevices
 
-VERSION = "0.2.1-alpha"
+VERSION = "0.2.1-beta"
 
 
 class BasePlugin:
@@ -131,10 +137,10 @@ class BasePlugin:
         Domoticz.Error("PollenForecast: {}".format(message))
 
     def onStart(self):
-        self.config = PluginConfig.from_domoticz(Parameters)
+        self.config = PluginConfig.from_domoticz(Parameters, Settings)
 
         if not self.config.valid_location:
-            self.error("Invalid location; configure Mode1 as longitude,latitude.")
+            self.error("Invalid location; configure Mode1 as longitude,latitude or leave it empty to use Domoticz coordinates.")
             Domoticz.Heartbeat(30)
             return
 
@@ -156,7 +162,7 @@ class BasePlugin:
 
         Domoticz.Heartbeat(30)
         self.log("Starting version {}".format(VERSION))
-        self.log("Location: longitude={:.6f}, latitude={:.6f}".format(self.config.longitude, self.config.latitude))
+        self.log("Location: longitude={:.6f}, latitude={:.6f} (source: {})".format(self.config.longitude, self.config.latitude, self.config.location_source))
         self.log("Language: {}".format(self.config.language))
         self.log("Refresh interval: {} minutes".format(self.config.refresh_minutes))
         self.log("Selected allergens: {}".format(", ".join(self.config.allergens)))

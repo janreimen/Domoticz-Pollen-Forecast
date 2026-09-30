@@ -4,6 +4,24 @@ All notable changes to this project are documented here.
 
 The project follows Semantic Versioning-style versioning during pre-1.0 development.
 
+## [0.2.1-beta] - 2026-09-30
+
+### Added
+
+- Use Domoticz system latitude/longitude automatically when Mode1 Location is left empty.
+- Keep explicit `longitude,latitude` input as a location override.
+- Log whether the effective location came from Mode1 or Domoticz.
+
+### Changed
+
+- Remove the hard-coded Luxembourg coordinates as the plugin default.
+- Make Mode1 Location optional.
+
+### Validation
+
+- Invalid explicit coordinates remain an error and do not silently fall back to Domoticz coordinates.
+- Existing allergen-driven device provisioning, fixed unit mapping, selected-pollen units and global-situation units are unchanged from `0.2.1-alpha`.
+
 ## [0.2.1-alpha] - 2026-09-30
 
 ### Added
@@ -79,5 +97,5 @@ The project follows Semantic Versioning-style versioning during pre-1.0 developm
 
 Earlier versions originated from the upstream Domoticz Pollen Forecast plugin and were progressively refactored into a modular implementation.
 
-[0.2.1-alpha]: https://github.com/janreimen/Domoticz-Pollen-Forecast/releases/tag/v0.2.1-alpha
+[0.2.1-beta]: https://github.com/janreimen/Domoticz-Pollen-Forecast/releases/tag/v0.2.1-beta
 [0.2.0-beta]: https://github.com/janreimen/Domoticz-Pollen-Forecast/releases/tag/v0.2.0-beta

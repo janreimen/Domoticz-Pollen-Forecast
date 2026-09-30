@@ -1,6 +1,6 @@
 # Testing
 
-**Version:** 0.2.1-alpha
+**Version:** 0.2.1-beta
 
 This document describes the minimum validation procedure before installing or releasing the plugin.
 
@@ -259,3 +259,12 @@ Verify that:
 - Only selected allergens are created and updated; deselected existing devices are not deleted or updated.
 - Changing Mode4 does not change the global situation.
 - Changing language changes device labels without changing calculations.
+
+
+## Location fallback tests
+
+1. Configure valid Domoticz system coordinates and leave Mode1 empty.
+2. Verify the plugin starts and logs `source: domoticz`.
+3. Enter a valid `longitude,latitude` in Mode1 and verify the log reports `source: plugin`.
+4. Enter an invalid longitude or latitude and verify the plugin reports an error and does not fall back to Domoticz coordinates.
+5. Clear Mode1 again and verify the plugin returns to the Domoticz system location.

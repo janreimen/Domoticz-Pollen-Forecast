@@ -1,6 +1,6 @@
 # Release Procedure
 
-**Version:** 0.2.1-alpha
+**Version:** 0.2.1-beta
 
 ## Release model
 
@@ -12,7 +12,7 @@ The project follows Semantic Versioning-style development stages:
 1.0.0
 ```
 
-`0.2.1-alpha` is an experimental development release.
+`0.2.1-beta` is a beta development release intended for broader testing before a stable release.
 
 ## Release checklist
 
@@ -21,7 +21,7 @@ The project follows Semantic Versioning-style development stages:
 Verify:
 
 ```text
-0.2.1-alpha
+0.2.1-beta
 ```
 
 in:
@@ -77,7 +77,9 @@ Review:
 
 Verify:
 
-- unified `longitude,latitude` configuration
+- optional `longitude,latitude` override
+- Domoticz system location fallback when Mode1 is empty
+- invalid explicit coordinates are rejected without fallback
 - longitude range validation
 - latitude range validation
 - all supported languages
@@ -93,26 +95,26 @@ Recommended commit:
 
 ```bash
 git add .
-git commit -m "Start 0.2.1-alpha development"
+git commit -m "Start 0.2.1-beta development"
 ```
 
 ### 7. Tagging
 
-Do not create a final release tag until the release is actually intended for distribution.
+Do not create a final release tag until the beta is actually intended for distribution.
 
-For an alpha tag:
+For the beta tag:
 
 ```bash
-git tag -a v0.2.1-alpha -m "Release 0.2.1-alpha"
+git tag -a v0.2.1-beta -m "Release 0.2.1-beta"
 git push origin main
-git push origin v0.2.1-alpha
+git push origin v0.2.1-beta
 ```
 
 ## Release notes
 
 The release notes should clearly state:
 
-- this is an alpha release
+- this is a beta release
 - the location configuration changed
 - the language set expanded
 - global pollen situation devices were added
@@ -120,6 +122,6 @@ The release notes should clearly state:
 
 ## Rollback
 
-If the alpha causes problems, restore the previous known-good commit/tag and restart Domoticz.
+If the beta causes problems, restore the previous known-good commit/tag and restart Domoticz.
 
 Do not manually modify individual device unit assignments to recover from a code regression.

@@ -1,6 +1,6 @@
 # API
 
-**Version:** 0.2.1-alpha
+**Version:** 0.2.1-beta
 
 ## Data source
 
@@ -60,6 +60,8 @@ Validation:
 ```
 
 The configuration parser converts the two values to numeric values and passes them to the API as latitude and longitude.
+
+If Mode1 is empty, the plugin reads the Domoticz system location from the Python plugin `Settings` dictionary and uses that location automatically. An invalid explicit Mode1 value is an error and does not fall back to the Domoticz location.
 
 ## Daily processing
 
